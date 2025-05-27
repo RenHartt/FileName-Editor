@@ -1,29 +1,32 @@
-#include "include/FileRenamerController.hpp"
+#include "FileRenamerController.hpp"
+#include "FileModel.hpp"
+#include "MainWindow.hpp"
 
-FileRenamerController::FileRenamerController(FileModel* model, QObject* parent) : QObject(parent), m_model(model) {
-    connect(m_model, &FileModel::fileListChanged, this, &FileRenamerController::fileListChanged);
+FileRenamerController::FileRenamerController(QObject* parent)
+  : QObject(parent),
+  m_view(new MainWindow),
+  m_model(new FileModel) {
+
+    connect(m_view->filePanel(), &FileSelectionPanel::browseRequested, this, &FileRenamerController::onBrowseRequested);
+    connect(this, &FileRenamerController::filesUpdated, m_view, &MainWindow::setFileList);
+  }
+
+void FileRenamerController::showMainWindow() {
+  m_view->show();
 }
 
-void FileRenamerController::addFile(const QString& path, bool selected) {
-    m_model->addFile(path, selected);
-}
+void FileRenamerController::onBrowseRequested()
+{
+    QStringList files = QFileDialog::getOpenFileNames(
+      m_view,
+      tr("Sélectionner des fichiers"),
+      QString(),
+      tr("Tous fichiers (*)")
+    );
 
-void FileRenamerController::removeFile(const QString& path) {
-    m_model->removeFile(path);
-}
+    for (const QString& f : files) {
+        m_model->addFile(f, true);
+    }
 
-void FileRenamerController::selectFile(const QString& path) {
-    m_model->selectFile(path);
-}
-
-void FileRenamerController::deselectFile(const QString& path) {
-    m_model->deselectFile(path);
-}
-
-void FileRenamerController::renameSelected(const QString& prefix) {
-    m_model->renameFiles(prefix);
-}
-
-void FileRenamerController::replaceSelected(const QString& oldText, const QString& newText) {
-    m_model->replaceInFilesName(oldText, newText);
+    emit filesUpdated(m_model->getFiles().keys());
 }

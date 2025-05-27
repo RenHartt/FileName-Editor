@@ -1,15 +1,11 @@
-#include "include/FileModel.hpp"
+#include "FileModel.hpp"
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
 
 void FileModel::addFile(const QString &filePath, bool selected) {
-
-    qDebug() << "CWD =" << QDir::currentPath();
-    qDebug() << "Asked to add:" << filePath;
-    qDebug() << "Absolute:" << QFileInfo(filePath).absoluteFilePath();
-    qDebug() << "Exists? (QFileInfo):" << QFileInfo(filePath).exists();
-
+    if (QFileInfo(filePath).exists() == false) return;
+    
     files[filePath] = new QFile(filePath);
     if (selected == true) {
         selectFile(filePath);

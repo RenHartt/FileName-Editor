@@ -1,18 +1,20 @@
-#include <QCoreApplication>
-#include "include/FileRenamerController.hpp"
-#include "qcoreapplication.h"
+#include <QApplication>
+#include <QFile>
+#include "FileRenamerController.hpp"
 
 int main(int argc, char *argv[]) {
-    QCoreApplication app(argc, argv);
-    
-    FileModel fileModel;
-    FileRenamerController controller(&fileModel);
-    
-    controller.addFile("/home/bgoron/Qt-shit/FileRenamer/test.txt");
-    std::cout << fileModel << std::endl;
-    controller.selectFile("/home/bgoron/Qt-shit/FileRenamer/test.txt");
-    controller.renameSelected("ouiiii");
-    std::cout << fileModel << std::endl;
+    QApplication app(argc, argv);
 
-    return 0;
+    QFile styleFile(":/style.qss");
+    if (!styleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Impossible de charger :/style.qss";
+    } else {
+        QString styleSheet = QString::fromUtf8(styleFile.readAll());
+        app.setStyleSheet(styleSheet);
+    }
+
+    FileRenamerController controller;
+    controller.showMainWindow();
+
+    return app.exec();
 }
