@@ -4,8 +4,7 @@
 #include "FileModel.hpp"
 #include "MainWindow.hpp"
 
-class FileRenamerController : public QObject
-{
+class FileRenamerController : public QObject {
     Q_OBJECT
 public:
     explicit FileRenamerController(QObject* parent = nullptr);
@@ -16,6 +15,9 @@ signals:
 
 private slots:
     void onBrowseRequested();
+
+    void onDestRequested();
+    void onPreviewRequested();
 
 private:
     FileModel*  m_model;

@@ -1,16 +1,34 @@
 #include "MainWindow.hpp"
+#include <qboxlayout.h>
+#include <qheaderview.h>
+#include <qpushbutton.h>
+#include <qsizepolicy.h>
+#include <qtablewidget.h>
+#include <QHeaderView>
 
 NavigationPane::NavigationPane(QWidget* parent)
-  : QWidget(parent),
-  m_layout(new QVBoxLayout(this)),
-  m_fileList(new QListWidget(this)) {
-    m_layout->addWidget(m_fileList);
-    setLayout(m_layout);
-  }
+ : QWidget(parent),
+   m_layout(new QVBoxLayout(this)),
+   m_table(new QTableWidget(this)) {
 
-void NavigationPane::setFiles(const QStringList& list) {
-  m_fileList->clear();
-  m_fileList->addItems(list);
+  m_table->setColumnCount(2);
+  m_table->setHorizontalHeaderLabels({ tr("Source"), tr("Preview") });
+  m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  m_layout->addWidget(m_table, 1);
+  m_layout->setStretch(0, 1);
+  setLayout(m_layout);
+}
+
+void NavigationPane::setEntries(const QStringList& srcs, const QStringList& dsts) {
+  int n = srcs.size();
+  m_table->clearContents();
+  m_table->setRowCount(n);
+  for (int i = 0; i < n; ++i) {
+    if (!srcs.empty()) m_table->setItem(i, 0, new QTableWidgetItem(srcs.value(i)));
+    if (!srcs.empty()) m_table->setItem(i, 1, new QTableWidgetItem(dsts.value(i)));
+  }
 }
 
 FileSelectionPanel::FileSelectionPanel(QWidget* parent)
@@ -24,8 +42,6 @@ FileSelectionPanel::FileSelectionPanel(QWidget* parent)
 	  m_buttonLayout->addWidget(m_selectAll);
 	  m_buttonLayout->addWidget(m_deselectAll);
 	  setLayout(m_buttonLayout);
-		
-	  connect(m_browse,&QPushButton::clicked, this, &FileSelectionPanel::browseRequested);
 }
 
 ReplaceOptionsPanel::ReplaceOptionsPanel(QWidget* parent)
@@ -53,14 +69,26 @@ ReplaceOptionsPanel::ReplaceOptionsPanel(QWidget* parent)
 ActionsPanel::ActionsPanel(QWidget* parent)
   : QWidget(parent),
   m_layout(new QVBoxLayout(this)),
-  m_dest(new QPushButton(tr("Destination…"), this)),
+  m_destEdit(new QLineEdit(this)),
+  m_dest(new QPushButton(tr("…"), this)),
   m_preview(new QPushButton(tr("Preview"), this)),
   m_process(new QPushButton(tr("Process"), this)) {
       
-	  m_layout->addWidget(m_dest);
-	  m_layout->addWidget(m_preview);
-	  m_layout->addWidget(m_process);
-	  setLayout(m_layout);
+    auto* destLayout = new QHBoxLayout;
+    m_destEdit->setReadOnly(true);
+    m_destEdit->setPlaceholderText(tr("Select dest folder"));
+    destLayout->addWidget(m_destEdit, 0);
+    m_dest->setFixedSize(40, 30);
+    destLayout->addWidget(m_dest, 1);
+
+    auto* actionLayout = new QHBoxLayout;
+    actionLayout->addWidget(m_preview);
+    actionLayout->addWidget(m_process);
+
+	  m_layout->addLayout(destLayout, 0);
+	  m_layout->addLayout(actionLayout, 0);
+	
+    setLayout(m_layout);
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -85,9 +113,14 @@ MainWindow::MainWindow(QWidget* parent)
     m_splitter->addWidget(rightWidget);
     setCentralWidget(m_splitter);
 
-    connect(m_filePanel, &FileSelectionPanel::browseRequested, this, &MainWindow::browseRequested);
+    connect(m_filePanel->browseButton(), &QPushButton::clicked,
+           this, &MainWindow::browseRequested);
+    connect(m_actions->previewButton(), &QPushButton::clicked,
+           this, &MainWindow::previewRequested);
+    connect(m_actions->destButton(), &QPushButton::clicked,
+           this, &MainWindow::destRequested);
 }
 
-void MainWindow::setFileList(const QStringList& files) {
-  m_navPane->setFiles(files);
+void MainWindow::setFileList(const QStringList& srcs, const QStringList& dsts) {
+  m_navPane->setEntries(srcs, dsts);
 }

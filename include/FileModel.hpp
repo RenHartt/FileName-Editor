@@ -2,34 +2,23 @@
 
 #include <QObject>
 #include <QString>
-#include <QMap>
-#include <QFile>
-#include <ostream>
-#include <iostream>
 
 class FileModel : public QObject
 {
     Q_OBJECT
-
 public:
     explicit FileModel(QObject *parent = nullptr) : QObject(parent) {}
 
-    QMap<QString, QFile*> getFiles() const { return files; }
-    
-    void addFile(const QString &file, bool selected = false);
-    void removeFile(const QString &file);
-    
-    void selectFile(const QString &file);
-    void deselectFile(const QString &file);
-    
-    void renameFiles(const QString &prefix);
-    void replaceInFilesName(const QString &oldText, const QString &newText);
+    void setSrcs(const QStringList& files) { m_srcs = files; }
+    void setDsts(const QStringList& files) { m_dsts = files; }
+    void setDstFolder(const QString& path) { m_dstFolder = path; }
 
-signals:
-    void fileListChanged();
+    QStringList srcs() const { return m_srcs; }
+    QStringList dsts() const { return m_dsts; }
+    QString dstFolder() const { return m_dstFolder; }
 
 private:
-    QMap<QString, QFile*> files;
+    QStringList m_srcs;
+    QStringList m_dsts;
+    QString m_dstFolder;
 };
-
-std::ostream& operator<<(std::ostream& os, const FileModel& model);
