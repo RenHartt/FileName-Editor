@@ -80,8 +80,9 @@ class ActionsPanel : public QWidget {
 public:
   explicit ActionsPanel(QWidget* parent = nullptr);
 
-  QPushButton* previewButton() { return m_preview; }
   QPushButton* destButton() { return m_dest; }
+  QPushButton* previewButton() { return m_preview; }
+  QPushButton* processButton() { return m_process; }
   QLineEdit* destEdit() { return m_destEdit; }
 
 signals:
@@ -110,8 +111,10 @@ public:
 
 signals:
   void browseRequested();
-  void previewRequested();
+
   void destRequested();
+  void previewRequested();
+  void processRequested();
 
 public slots:
   void setFileList(const QStringList& srcs, const QStringList& dsts);

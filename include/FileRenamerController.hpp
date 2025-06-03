@@ -18,6 +18,7 @@ private slots:
 
     void onDestRequested();
     void onPreviewRequested();
+    void onProcessRequested();
 
 private:
     FileModel*  m_model;

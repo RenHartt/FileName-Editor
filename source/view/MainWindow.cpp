@@ -114,11 +114,13 @@ MainWindow::MainWindow(QWidget* parent)
     setCentralWidget(m_splitter);
 
     connect(m_filePanel->browseButton(), &QPushButton::clicked,
-           this, &MainWindow::browseRequested);
-    connect(m_actions->previewButton(), &QPushButton::clicked,
-           this, &MainWindow::previewRequested);
+            this, &MainWindow::browseRequested);
     connect(m_actions->destButton(), &QPushButton::clicked,
-           this, &MainWindow::destRequested);
+            this, &MainWindow::destRequested);
+    connect(m_actions->previewButton(), &QPushButton::clicked,
+            this, &MainWindow::previewRequested);
+    connect(m_actions->processButton(), &QPushButton::clicked,
+            this, &MainWindow::processRequested);
 }
 
 void MainWindow::setFileList(const QStringList& srcs, const QStringList& dsts) {
