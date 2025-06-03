@@ -24,16 +24,21 @@ enum Mode {
 };
 
 class NavigationPane : public QWidget {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit NavigationPane(QWidget* parent = nullptr);
+  explicit NavigationPane(QWidget* parent = nullptr);
+
+  QTableWidget* table() { return m_table; }
+
+signals:
+  void cellChanged(int row, int column);
 
 public slots:
-    void setEntries(const QStringList& srcs, const QStringList& dsts);
+  void setEntries(const QStringList& srcs, const QStringList& dsts);
 
 private:
-    QVBoxLayout* m_layout;
-    QTableWidget* m_table;
+  QVBoxLayout* m_layout;
+  QTableWidget* m_table;
 };
 
 class FileSelectionPanel : public QWidget {
@@ -102,6 +107,7 @@ public:
   ~MainWindow() = default;
 
   FileSelectionPanel* filePanel() const { return m_filePanel; }
+  NavigationPane* navigationPane() const { return m_navPane; }
 
   Mode mode() { return (m_replaceOpt->prefixMode()->isChecked() == true ? PrefixMode : ReplaceMode); }
   QLineEdit* prefix() { return m_replaceOpt->prefixEdit(); }
@@ -110,6 +116,7 @@ public:
   QLineEdit* destEdit() { return m_actions->destEdit(); }
 
 signals:
+  void cellChanged(int row, int colomn);
   void browseRequested();
 
   void destRequested();

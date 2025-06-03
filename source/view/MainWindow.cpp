@@ -14,11 +14,14 @@ NavigationPane::NavigationPane(QWidget* parent)
   m_table->setColumnCount(2);
   m_table->setHorizontalHeaderLabels({ tr("Source"), tr("Preview") });
   m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-  m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  m_table->setEditTriggers(QAbstractItemView::DoubleClicked);
   m_table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   m_layout->addWidget(m_table, 1);
   m_layout->setStretch(0, 1);
   setLayout(m_layout);
+
+  connect(m_table, &QTableWidget::cellChanged,
+        this, &NavigationPane::cellChanged);
 }
 
 void NavigationPane::setEntries(const QStringList& srcs, const QStringList& dsts) {
@@ -47,7 +50,7 @@ FileSelectionPanel::FileSelectionPanel(QWidget* parent)
 ReplaceOptionsPanel::ReplaceOptionsPanel(QWidget* parent)
   : QWidget(parent),
   m_layout(new QVBoxLayout(this)),
-  m_prefixMode(new QRadioButton(tr("Prefix"), this)),
+  m_prefixMode(new QRadioButton(tr("Prefix + index"), this)),
   m_prefixEdit(new QLineEdit(this)),
   m_replaceMode(new QRadioButton(tr("Replace"), this)),
   m_oldEdit(new QLineEdit(this)),
@@ -57,11 +60,12 @@ ReplaceOptionsPanel::ReplaceOptionsPanel(QWidget* parent)
     buttonGroup->addButton(m_prefixMode);
     buttonGroup->addButton(m_replaceMode);
     m_layout->addWidget(m_prefixMode);
+    m_prefixEdit->setPlaceholderText(tr("Prefix"));
     m_layout->addWidget(m_prefixEdit);
     m_layout->addWidget(m_replaceMode);
-    m_layout->addWidget(new QLabel(tr("Old:"), this));
+    m_oldEdit->setPlaceholderText(tr("Old"));
     m_layout->addWidget(m_oldEdit);
-    m_layout->addWidget(new QLabel(tr("New:"), this));
+    m_newEdit->setPlaceholderText(tr("New"));
     m_layout->addWidget(m_newEdit);
     setLayout(m_layout);
 }
@@ -121,6 +125,9 @@ MainWindow::MainWindow(QWidget* parent)
             this, &MainWindow::previewRequested);
     connect(m_actions->processButton(), &QPushButton::clicked,
             this, &MainWindow::processRequested);
+    connect(m_navPane, &NavigationPane::cellChanged,
+            this, &MainWindow::cellChanged);
+
 }
 
 void MainWindow::setFileList(const QStringList& srcs, const QStringList& dsts) {

@@ -14,6 +14,8 @@ signals:
     void filesUpdated(const QStringList& files);
 
 private slots:
+    void oncellChanged(int row, int column);
+
     void onBrowseRequested();
 
     void onDestRequested();

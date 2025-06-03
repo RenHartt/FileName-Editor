@@ -8,6 +8,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+set(CMAKE_PREFIX_PATH "/nfs/homes/bgoron/Qt/6.9.0/gcc_64")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)

@@ -20,10 +20,30 @@ FileRenamerController::FileRenamerController(QObject* parent)
           this, &FileRenamerController::onDestRequested);
   connect(m_view, &MainWindow::processRequested,
           this, &FileRenamerController::onProcessRequested);
+  connect(m_view, &MainWindow::cellChanged,
+            this, &FileRenamerController::oncellChanged);
 }
 
 void FileRenamerController::showMainWindow() {
   m_view->show();
+}
+
+void FileRenamerController::oncellChanged(int row, int column) {
+  QString newText = m_view->navigationPane()->table()->item(row, column)->text();
+  if (column == 0) {
+      QStringList srcs = m_model->srcs();
+      if (row < srcs.size()) {
+          srcs[row] = newText;
+          m_model->setSrcs(srcs);
+      }
+  }
+  else if (column == 1) {
+      QStringList dsts = m_model->dsts();
+      if (row < dsts.size()) {
+          dsts[row] = newText;
+          m_model->setDsts(dsts);
+      }
+  }
 }
 
 void FileRenamerController::onBrowseRequested() {
