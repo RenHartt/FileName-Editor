@@ -4,6 +4,8 @@
 #include <qcontainerfwd.h>
 #include <qfiledialog.h>
 #include <qlogging.h>
+#include <QMessageBox>
+#include <qmessagebox.h>
 
 FileRenamerController::FileRenamerController(QObject* parent)
   : QObject(parent),
@@ -16,6 +18,8 @@ FileRenamerController::FileRenamerController(QObject* parent)
            this, &FileRenamerController::onPreviewRequested);
   connect(m_view, &MainWindow::destRequested,
           this, &FileRenamerController::onDestRequested);
+  connect(m_view, &MainWindow::processRequested,
+          this, &FileRenamerController::onProcessRequested);
 }
 
 void FileRenamerController::showMainWindow() {
@@ -43,39 +47,56 @@ void FileRenamerController::onDestRequested() {
   );
 
   m_model->setDstFolder(destDir);
-  m_view->destEdit()->setPlaceholderText(destDir);
+  m_view->destEdit()->setText(destDir);
 }
 
 void FileRenamerController::onPreviewRequested() {
   QStringList srcs = m_model->srcs();
   QStringList dsts;
   dsts.reserve(srcs.size());
-  
   QString path = m_model->dstFolder();
+
   if (m_view->mode() == PrefixMode) {
-    QString prefix = m_view->prefix()->text();
     for (int i = 0; i < srcs.size(); ++i) {
       QFileInfo fi(srcs[i]);
-      QString ext = fi.suffix().isEmpty() 
-      ? QString{}
-      : QString(".%1").arg(fi.suffix());
-      dsts << QString("%1/%2%3%4").arg(path).arg(prefix).arg(i).arg(ext);
+      QString prefix = fi.baseName().isEmpty()
+      ? QString{} : QString("%1%2").arg(m_view->prefix()->text()).arg(i) ;
+      QString ext = fi.completeSuffix().isEmpty()
+      ? QString{} : QString(".%1").arg(fi.completeSuffix());
+      dsts << QString("%1/%2%3").arg(path).arg(prefix).arg(ext);
     }
   } else if (m_view->mode() == ReplaceMode) {
     for (int i = 0; i < srcs.size(); ++i) {
       QFileInfo fi(srcs[i]);
-      QString fileName = fi.fileName();
-      QString ext = fi.suffix().isEmpty()
-      ? QString{}
-      : QString(".%1").arg(fi.suffix());
+      QString fileName = fi.baseName();
+      QString ext = fi.completeSuffix().isEmpty()
+      ? QString{} : QString(".%1").arg(fi.completeSuffix());
       fileName.replace(m_view->oldEdit()->text(), m_view->newEdit()->text());
       dsts << QString("%1/%2%3").arg(path).arg(fileName).arg(ext);
     }
   }
+
   m_model->setDsts(dsts);
   m_view->setFileList(srcs, dsts);
 }
 
 void FileRenamerController::onProcessRequested() {
-  
+  if (m_view->destEdit()->text().isEmpty()) {
+    QMessageBox::warning(
+      m_view,
+      tr("Warning !"),
+      tr("Destination folder must be filled.")
+    );
+    return;
+  }
+  QStringList srcs = m_model->srcs();
+  QStringList dsts = m_model->dsts();
+  for(int i = 0; i < srcs.size() && i < dsts.size(); ++i) {
+    QFile::copy(srcs[i], dsts[i]);
+  }
+  QMessageBox::information(
+    m_view,
+    tr("Succes !"),
+    tr("Succes.")
+  );
 }
