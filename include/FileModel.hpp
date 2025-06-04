@@ -2,8 +2,7 @@
 
 #include <QObject>
 #include <QString>
-#include <QPair>
-#include <QVector>
+#include <QMap>
 
 class FileModel : public QObject
 {
@@ -11,15 +10,15 @@ class FileModel : public QObject
 public:
     explicit FileModel(QObject *parent = nullptr) : QObject(parent) {}
 
-    using FilePairs = QVector<QPair<QString, QString>>;
+    using FileMap = QMap<QString, QString>;
 
-    void setFiles(const FilePairs& files) { m_files = files; }
-    FilePairs files() const { return m_files; }
+    void setFiles(const FileMap& files) { m_files = files; }
+    FileMap files() const { return m_files; }
     void setDstFolder(const QString& path) { m_dstFolder = path; }
 
     QString dstFolder() const { return m_dstFolder; }
 
 private:
-    FilePairs m_files;
+    FileMap m_files;
     QString m_dstFolder;
 };
