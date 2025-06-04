@@ -17,6 +17,8 @@
 #include <qtmetamacros.h>
 #include <QFileDialog>
 #include <QTableWidget>
+#include <QPair>
+#include <QVector>
 
 enum Mode {
   PrefixMode,
@@ -34,7 +36,7 @@ signals:
   void cellChanged(int row, int column);
 
 public slots:
-  void setEntries(const QStringList& srcs, const QStringList& dsts);
+  void setEntries(const QVector<QPair<QString, QString>>& files);
 
 private:
   QVBoxLayout* m_layout;
@@ -124,7 +126,7 @@ signals:
   void processRequested();
 
 public slots:
-  void setFileList(const QStringList& srcs, const QStringList& dsts);
+  void setFileList(const QVector<QPair<QString, QString>>& files);
 
 private:
     NavigationPane*      m_navPane;
