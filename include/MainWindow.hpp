@@ -116,7 +116,7 @@ public:
   QLineEdit* destEdit() { return m_actions->destEdit(); }
 
 signals:
-  void cellChanged(int row, int colomn);
+  void cellChanged(int row, int column);
   void browseRequested();
 
   void destRequested();
