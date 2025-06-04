@@ -6,6 +6,7 @@
 #include <qlogging.h>
 #include <QMessageBox>
 #include <qmessagebox.h>
+#include <QFileInfo>
 
 FileRenamerController::FileRenamerController(QObject* parent)
   : QObject(parent),
@@ -30,32 +31,32 @@ void FileRenamerController::showMainWindow() {
 
 void FileRenamerController::oncellChanged(int row, int column) {
   QString newText = m_view->navigationPane()->table()->item(row, column)->text();
-  if (column == 0) {
-      QStringList srcs = m_model->srcs();
-      if (row < srcs.size()) {
-          srcs[row] = newText;
-          m_model->setSrcs(srcs);
+  auto files = m_model->files();
+  if (row < files.size()) {
+      if (column == 0) {
+          files[row].first = newText;
+      } else if (column == 1) {
+          files[row].second = newText;
       }
-  }
-  else if (column == 1) {
-      QStringList dsts = m_model->dsts();
-      if (row < dsts.size()) {
-          dsts[row] = newText;
-          m_model->setDsts(dsts);
-      }
+      m_model->setFiles(files);
   }
 }
 
 void FileRenamerController::onBrowseRequested() {
-    QStringList files = QFileDialog::getOpenFileNames(
+    QStringList paths = QFileDialog::getOpenFileNames(
       m_view,
       tr("Sélectionner des fichiers"),
       QString(),
       tr("Tous fichiers (*)")
     );
 
-    m_model->setSrcs(files);
-    m_view->setFileList(files, QStringList{});
+    FileModel::FilePairs files;
+    files.reserve(paths.size());
+    for (const QString& p : paths) {
+        files.append({p, QString{}});
+    }
+    m_model->setFiles(files);
+    m_view->setFileList(files);
 }
 
 void FileRenamerController::onDestRequested() {
@@ -71,33 +72,31 @@ void FileRenamerController::onDestRequested() {
 }
 
 void FileRenamerController::onPreviewRequested() {
-  QStringList srcs = m_model->srcs();
-  QStringList dsts;
-  dsts.reserve(srcs.size());
+  auto files = m_model->files();
   QString path = m_model->dstFolder();
 
   if (m_view->mode() == PrefixMode) {
-    for (int i = 0; i < srcs.size(); ++i) {
-      QFileInfo fi(srcs[i]);
+    for (int i = 0; i < files.size(); ++i) {
+      QFileInfo fi(files[i].first);
       QString prefix = fi.baseName().isEmpty()
       ? QString{} : QString("%1%2").arg(m_view->prefix()->text()).arg(i) ;
       QString ext = fi.completeSuffix().isEmpty()
       ? QString{} : QString(".%1").arg(fi.completeSuffix());
-      dsts << QString("%1/%2%3").arg(path).arg(prefix).arg(ext);
+      files[i].second = QString("%1/%2%3").arg(path).arg(prefix).arg(ext);
     }
   } else if (m_view->mode() == ReplaceMode) {
-    for (int i = 0; i < srcs.size(); ++i) {
-      QFileInfo fi(srcs[i]);
+    for (int i = 0; i < files.size(); ++i) {
+      QFileInfo fi(files[i].first);
       QString fileName = fi.baseName();
       QString ext = fi.completeSuffix().isEmpty()
       ? QString{} : QString(".%1").arg(fi.completeSuffix());
       fileName.replace(m_view->oldEdit()->text(), m_view->newEdit()->text());
-      dsts << QString("%1/%2%3").arg(path).arg(fileName).arg(ext);
+      files[i].second = QString("%1/%2%3").arg(path).arg(fileName).arg(ext);
     }
   }
 
-  m_model->setDsts(dsts);
-  m_view->setFileList(srcs, dsts);
+  m_model->setFiles(files);
+  m_view->setFileList(files);
 }
 
 void FileRenamerController::onProcessRequested() {
@@ -109,10 +108,9 @@ void FileRenamerController::onProcessRequested() {
     );
     return;
   }
-  QStringList srcs = m_model->srcs();
-  QStringList dsts = m_model->dsts();
-  for(int i = 0; i < srcs.size() && i < dsts.size(); ++i) {
-    QFile::copy(srcs[i], dsts[i]);
+  auto files = m_model->files();
+  for(const auto& p : files) {
+    QFile::copy(p.first, p.second);
   }
   QMessageBox::information(
     m_view,

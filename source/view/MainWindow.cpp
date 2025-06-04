@@ -24,13 +24,13 @@ NavigationPane::NavigationPane(QWidget* parent)
         this, &NavigationPane::cellChanged);
 }
 
-void NavigationPane::setEntries(const QStringList& srcs, const QStringList& dsts) {
-  int n = srcs.size();
+void NavigationPane::setEntries(const QVector<QPair<QString, QString>>& files) {
+  int n = files.size();
   m_table->clearContents();
   m_table->setRowCount(n);
   for (int i = 0; i < n; ++i) {
-    if (!srcs.empty()) m_table->setItem(i, 0, new QTableWidgetItem(srcs.value(i)));
-    if (!srcs.empty()) m_table->setItem(i, 1, new QTableWidgetItem(dsts.value(i)));
+    m_table->setItem(i, 0, new QTableWidgetItem(files[i].first));
+    m_table->setItem(i, 1, new QTableWidgetItem(files[i].second));
   }
 }
 
@@ -130,6 +130,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 }
 
-void MainWindow::setFileList(const QStringList& srcs, const QStringList& dsts) {
-  m_navPane->setEntries(srcs, dsts);
+void MainWindow::setFileList(const QVector<QPair<QString, QString>>& files) {
+  m_navPane->setEntries(files);
 }
