@@ -3,8 +3,7 @@
 #include <QObject>
 #include "FileModel.hpp"
 #include "MainWindow.hpp"
-#include <QPair>
-#include <QVector>
+#include <QMap>
 
 class FileRenamerController : public QObject {
     Q_OBJECT
@@ -13,7 +12,7 @@ public:
     void showMainWindow();
 
 signals:
-    void filesUpdated(const QVector<QPair<QString, QString>>& files);
+    void filesUpdated(const QMap<QString, QString>& files);
 
 private slots:
     void oncellChanged(int row, int column);

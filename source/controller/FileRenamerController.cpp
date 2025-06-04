@@ -32,11 +32,14 @@ void FileRenamerController::showMainWindow() {
 void FileRenamerController::oncellChanged(int row, int column) {
   QString newText = m_view->navigationPane()->table()->item(row, column)->text();
   auto files = m_model->files();
-  if (row < files.size()) {
+  QStringList keys = files.keys();
+  if (row < keys.size()) {
+      const QString key = keys[row];
       if (column == 0) {
-          files[row].first = newText;
+          QString value = files.take(key);
+          files.insert(newText, value);
       } else if (column == 1) {
-          files[row].second = newText;
+          files[key] = newText;
       }
       m_model->setFiles(files);
   }
@@ -50,10 +53,9 @@ void FileRenamerController::onBrowseRequested() {
       tr("Tous fichiers (*)")
     );
 
-    FileModel::FilePairs files;
-    files.reserve(paths.size());
+    FileModel::FileMap files;
     for (const QString& p : paths) {
-        files.append({p, QString{}});
+        files.insert(p, QString{});
     }
     m_model->setFiles(files);
     m_view->setFileList(files);
@@ -75,23 +77,27 @@ void FileRenamerController::onPreviewRequested() {
   auto files = m_model->files();
   QString path = m_model->dstFolder();
 
+  QStringList keys = files.keys();
+
   if (m_view->mode() == PrefixMode) {
-    for (int i = 0; i < files.size(); ++i) {
-      QFileInfo fi(files[i].first);
+    for (int i = 0; i < keys.size(); ++i) {
+      const QString& src = keys[i];
+      QFileInfo fi(src);
       QString prefix = fi.baseName().isEmpty()
       ? QString{} : QString("%1%2").arg(m_view->prefix()->text()).arg(i) ;
       QString ext = fi.completeSuffix().isEmpty()
       ? QString{} : QString(".%1").arg(fi.completeSuffix());
-      files[i].second = QString("%1/%2%3").arg(path).arg(prefix).arg(ext);
+      files[src] = QString("%1/%2%3").arg(path).arg(prefix).arg(ext);
     }
   } else if (m_view->mode() == ReplaceMode) {
-    for (int i = 0; i < files.size(); ++i) {
-      QFileInfo fi(files[i].first);
+    for (int i = 0; i < keys.size(); ++i) {
+      const QString& src = keys[i];
+      QFileInfo fi(src);
       QString fileName = fi.baseName();
       QString ext = fi.completeSuffix().isEmpty()
       ? QString{} : QString(".%1").arg(fi.completeSuffix());
       fileName.replace(m_view->oldEdit()->text(), m_view->newEdit()->text());
-      files[i].second = QString("%1/%2%3").arg(path).arg(fileName).arg(ext);
+      files[src] = QString("%1/%2%3").arg(path).arg(fileName).arg(ext);
     }
   }
 
@@ -109,8 +115,8 @@ void FileRenamerController::onProcessRequested() {
     return;
   }
   auto files = m_model->files();
-  for(const auto& p : files) {
-    QFile::copy(p.first, p.second);
+  for(auto it = files.constBegin(); it != files.constEnd(); ++it) {
+    QFile::copy(it.key(), it.value());
   }
   QMessageBox::information(
     m_view,
