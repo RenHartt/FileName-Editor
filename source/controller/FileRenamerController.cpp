@@ -53,7 +53,7 @@ void FileRenamerController::onBrowseRequested() {
       tr("Tous fichiers (*)")
     );
 
-    FileModel::FileMap files;
+    QMap<QString, QString> files;
     for (const QString& p : paths) {
         files.insert(p, QString{});
     }
@@ -84,7 +84,7 @@ void FileRenamerController::onPreviewRequested() {
       const QString& src = keys[i];
       QFileInfo fi(src);
       QString prefix = fi.baseName().isEmpty()
-      ? QString{} : QString("%1%2").arg(m_view->prefix()->text()).arg(i) ;
+      ? QString{} : QString("%1%2").arg(m_view->prefix()->text()).arg(i, QString::number(keys.size()).length(), 10, QChar('0')) ;
       QString ext = fi.completeSuffix().isEmpty()
       ? QString{} : QString(".%1").arg(fi.completeSuffix());
       files[src] = QString("%1/%2%3").arg(path).arg(prefix).arg(ext);

@@ -10,15 +10,13 @@ class FileModel : public QObject
 public:
     explicit FileModel(QObject *parent = nullptr) : QObject(parent) {}
 
-    using FileMap = QMap<QString, QString>;
-
-    void setFiles(const FileMap& files) { m_files = files; }
-    FileMap files() const { return m_files; }
+    void setFiles(const QMap<QString, QString>& files) { m_files = files; }
+    const QMap<QString, QString>& files() const { return m_files; }
     void setDstFolder(const QString& path) { m_dstFolder = path; }
 
     QString dstFolder() const { return m_dstFolder; }
 
 private:
-    FileMap m_files;
+    QMap<QString, QString> m_files;
     QString m_dstFolder;
 };
